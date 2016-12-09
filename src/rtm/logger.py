@@ -15,16 +15,16 @@ Created on 12/09/2016
 logger = logging.getLogger('rtm')
 logger.setLevel(logging.DEBUG)
 
+# create formatter
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(thread)d - %(levelname)s - %(message)s")
+
 # create console handler and set level to debug
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
 
-# create formatter
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(process)d - %(levelname)s - %(message)s")
+fh = logging.FileHandler('rtm.log')
 
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
+for h in (ch, fh):
+    h.setLevel(logging.DEBUG)
+    h.setFormatter(formatter)
+    logger.addHandler(h)
 
