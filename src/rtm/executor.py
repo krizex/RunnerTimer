@@ -71,6 +71,7 @@ class CmdRunner(object):
         if self.p:
             logger.info('terminate runner')
             self.p.terminate()
+            self.p.wait()
             self.p = None
 
 
@@ -110,7 +111,7 @@ class LoopMaster(object):
 
 
 if __name__ == '__main__':
-    e = LoopMaster('./x.sh -s', 16, '/home/dqian/temp/20161209')
+    e = LoopMaster('python -m SimpleHTTPServer', 21)
     e.run()
 
 
