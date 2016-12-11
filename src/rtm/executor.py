@@ -41,7 +41,13 @@ class ExecutorThread(Thread):
         logger.info('terminate executor thread')
 
     def _wait_and_clear_event(self):
-        self._event.wait()
+        while True:
+            if self._event.is_set() or not self._runner.is_alive():
+                logger.info('Need restart runner')
+                break
+
+            time.sleep(5)
+
         self._event.clear()
 
     def restart_runner(self):
@@ -70,9 +76,22 @@ class CmdRunner(object):
     def terminate(self):
         if self.p:
             logger.info('terminate runner')
-            self.p.terminate()
+            try:
+                self.p.terminate()
+            except OSError:
+                pass
             self.p.wait()
             self.p = None
+
+    def is_alive(self):
+        if not self.p:
+            return False
+
+        if self.p.poll() is None:
+            return True
+
+        return False
+
 
 
 class LoopMaster(object):
