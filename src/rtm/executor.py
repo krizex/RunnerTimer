@@ -3,7 +3,7 @@
 import subprocess
 import time
 import signal
-from threading import Thread, Event
+from threading import Thread
 
 from rtm.logger import logger
 
@@ -24,38 +24,22 @@ class ExecutorThread(Thread):
     def __init__(self, cmd, workdir):
         super(ExecutorThread, self).__init__()
         self._runner = CmdRunner(cmd, workdir)
-        self._event = Event()
         self._terminate = False
 
     def run(self):
         logger.info('start executor thread')
         while not self._terminate:
             self._runner.start()
-            self._wait_and_clear_event()
-            if self._terminate:
-                break
+            self._runner.wait()
 
-            self._runner.terminate()
-
-        self._runner.terminate()
         logger.info('terminate executor thread')
 
-    def _wait_and_clear_event(self):
-        while True:
-            if self._event.is_set() or not self._runner.is_alive():
-                logger.info('Need restart runner')
-                break
-
-            time.sleep(5)
-
-        self._event.clear()
+    def terminate(self):
+        self._runner.terminate()
+        self._terminate = True
 
     def restart_runner(self):
-        self._event.set()
-
-    def terminate(self):
-        self._terminate = True
-        self._event.set()
+        self._runner.terminate()
 
 
 class CmdRunner(object):
@@ -80,18 +64,10 @@ class CmdRunner(object):
                 self.p.terminate()
             except OSError:
                 pass
-            self.p.wait()
-            self.p = None
 
-    def is_alive(self):
-        if not self.p:
-            return False
-
-        if self.p.poll() is None:
-            return True
-
-        return False
-
+    def wait(self):
+        self.p.wait()
+        logger.info('runner killed')
 
 
 class LoopMaster(object):

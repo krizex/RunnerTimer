@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 echo "BEGIN"
-sleep 10
+sleep 6
 echo "DONE"
